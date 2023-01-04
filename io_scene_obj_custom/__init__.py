@@ -326,6 +326,8 @@ class SetVertexBoolean(bpy.types.Operator):
     bl_label = "Set Vertex 0/1"
 
     def execute(self, context):
+        print("set_vertex_boolean executing")
+
         mode = context.active_object.mode
         bpy.ops.object.mode_set(mode='OBJECT')
         
@@ -377,9 +379,6 @@ def register():
 
     bpy.types.TOPBAR_MT_file_export.append(menu_func_export)
     bpy.types.VIEW3D_MT_edit_mesh_context_menu.prepend(vertex_menu_func)
-
-
-
 
 def unregister():
     bpy.types.VIEW3D_MT_edit_mesh_context_menu.remove(vertex_menu_func)
