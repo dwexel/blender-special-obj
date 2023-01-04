@@ -433,6 +433,7 @@ def write_file(filepath, objects, depsgraph, scene,
 
                         subprogress2.step()
 
+# vertex writing
                         # Vert
                         for v in me_verts:
                             fw('v %.6f %.6f %.6f\n' % v.co[:])

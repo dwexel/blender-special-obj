@@ -22,10 +22,6 @@ if "bpy" in locals():
         importlib.reload(export_obj)
 
 
-
-
-
-
 import bpy
 from bpy.props import (
     BoolProperty,
@@ -283,16 +279,38 @@ def menu_func_export(self, context):
     self.layout.operator(ExportOBJ.bl_idname, text=ExportOBJ.bl_label)
 
 
-# custom vertex stuff
-from .blender_console_print import print 
-print('thing executed')
+# custom print
+# problem: blender restricting context?
+import builtins as __builtin__
 
+def console_print(*args, **kwargs):
+    context = bpy.context
+    for a in context.screen.areas:
+        if a.type == 'CONSOLE':
+            c = {}
+            c['area'] = a
+            c['space_data'] = a.spaces.active
+            c['region'] = a.regions[-1]
+            c['window'] = context.window
+            c['screen'] = context.screen
+            s = " ".join([str(arg) for arg in args])
+            for line in s.split("\n"):
+                bpy.ops.console.scrollback_append(c, text=line)
+
+def print(*args, **kwargs):
+    """Console print() function."""
+    console_print(*args, **kwargs) # to py consoles
+    __builtin__.print(*args, **kwargs) # to system console
+
+
+
+# custom vertex creation
 import bmesh
 name = "created_attribute"
 
 def make_attribute(mesh):
     if name in mesh.attributes.keys():
-        # print("already there")
+        print("attribute %s already exists in mesh" % name)
     else:
         mesh.attributes.new(name=name, type="INT", domain="POINT")
 
@@ -305,7 +323,7 @@ class SetVertexBoolean(bpy.types.Operator):
     """set selected 1, unselected 0"""
     
     bl_idname = "mesh.set_vertex_boolean"
-    bl_label = "Set Vertex Int 0/1"
+    bl_label = "Set Vertex 0/1"
 
     def execute(self, context):
         mode = context.active_object.mode
@@ -325,11 +343,10 @@ class SetVertexBoolean(bpy.types.Operator):
                 v[layer] = 1
             else:
                 v[layer] = 0
-        
 
-        # for v in bm.verts:
-        #     value = v[layer]
-        #     print(value)
+        for v in bm.verts:
+            value = v[layer]
+            print(value)
 
         bm.to_mesh(mesh)
         bm.free()
@@ -360,6 +377,8 @@ def register():
 
     bpy.types.TOPBAR_MT_file_export.append(menu_func_export)
     bpy.types.VIEW3D_MT_edit_mesh_context_menu.prepend(vertex_menu_func)
+
+
 
 
 def unregister():
